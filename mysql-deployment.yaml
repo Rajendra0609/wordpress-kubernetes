@@ -4,9 +4,15 @@ metadata:
   name: mysql
   namespace: wordpress
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: mysql
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -16,17 +22,40 @@ spec:
         - name: mysql
           image: mysql:5.7
           imagePullPolicy: IfNotPresent
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: wordpress
-            - name: MYSQL_DATABASE
-              value: wordpress
-            - name: MYSQL_USER
-              value: wpuser
-            - name: MYSQL_PASSWORD
-              value: wppass
+          envFrom:
+            - configMapRef:
+                name: mysql-config
           ports:
             - containerPort: 3306
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+          readinessProbe:
+            exec:
+              command:
+                - "mysqladmin"
+                - "ping"
+                - "-h"
+                - "127.0.0.1"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command:
+                - "mysqladmin"
+                - "ping"
+                - "-h"
+                - "127.0.0.1"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
           volumeMounts:
             - name: mysql-storage
               mountPath: /var/lib/mysql
