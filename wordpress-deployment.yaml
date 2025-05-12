@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+        - name: wordpress
+          image: wordpress:5.8.1-php7.4-apache
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: mysql.wordpress.svc.cluster.local:3306  # Updated to include namespace for proper DNS resolution
+            - name: WORDPRESS_DB_USER
+              value: wpuser  # Use a separate MySQL user for WordPress
+            - name: WORDPRESS_DB_PASSWORD
+              value: wppass  # The password for 'wpuser'
+            - name: WORDPRESS_DB_NAME
+              value: wordpress  # The name of the database WordPress will use
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: wordpress-storage
+      volumes:
+        - name: wordpress-storage
+          persistentVolumeClaim:
+            claimName: wp-pvc  # Ensure this PVC exists and is bound correctly
+
