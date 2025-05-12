@@ -4,6 +4,7 @@ metadata:
   name: wordpress
   namespace: wordpress
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: wordpress
@@ -18,13 +19,13 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: WORDPRESS_DB_HOST
-              value: mysql.wordpress.svc.cluster.local:3306  # Updated to include namespace for proper DNS resolution
+              value: mysql.wordpress.svc.cluster.local:3306
             - name: WORDPRESS_DB_USER
-              value: wpuser  # Use a separate MySQL user for WordPress
+              value: wpuser
             - name: WORDPRESS_DB_PASSWORD
-              value: wppass  # The password for 'wpuser'
+              value: wppass
             - name: WORDPRESS_DB_NAME
-              value: wordpress  # The name of the database WordPress will use
+              value: wordpress
           resources:
             limits:
               memory: "128Mi"
@@ -37,5 +38,19 @@ spec:
       volumes:
         - name: wordpress-storage
           persistentVolumeClaim:
-            claimName: wp-pvc  # Ensure this PVC exists and is bound correctly
+            claimName: wp-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: wordpress  # ✅ Fixed: match Deployment namespace
+spec:
+  type: NodePort
+  selector:
+    app: wordpress
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
 
