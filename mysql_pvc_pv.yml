@@ -7,6 +7,7 @@ spec:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
+  storageClassName: ""  # <-- ADD THIS
   volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   hostPath:
@@ -16,10 +17,11 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc
-  namespace: wordpress  # ✅ Added namespace
+  namespace: wordpress
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: ""  # <-- ADD THIS
   resources:
     requests:
       storage: 5Gi

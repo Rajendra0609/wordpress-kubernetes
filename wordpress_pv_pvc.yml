@@ -7,10 +7,11 @@ spec:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
+  storageClassName: ""  # <-- ADD THIS
+  volumeMode: Filesystem
   persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/data/wp-pv
-  volumeMode: Filesystem
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -20,6 +21,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: ""  # <-- ADD THIS
   resources:
     requests:
       storage: 5Gi
